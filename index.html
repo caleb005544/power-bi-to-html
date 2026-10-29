@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Executive Dashboard | Power BI to HTML</title>
+  <title>Executive Dashboard | Business Analyst Portfolio</title>
   <link rel="stylesheet" href="css/styles.css">
-  <!-- Planned CDN libs: ECharts, Leaflet (added when charts are built) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
   <header class="header">
@@ -20,28 +22,112 @@
     <button class="tab" data-page="site-productivity">Site Productivity</button>
     <button class="tab" data-page="availability-ops">Availability &amp; Ops</button>
   </nav>
+
   <div class="layout">
-    <aside class="slicers">
-      <label>Year<select id="slicer-year"><option>All</option></select></label>
-      <label>Month<select id="slicer-month"><option>All</option></select></label>
+    <aside class="slicers" id="slicers">
+      <div class="slicer-row">
+        <div class="slicer" data-slicer="year"><div class="slicer-title">Year</div><div class="slicer-buttons"></div></div>
+      </div>
+      <div class="slicer" data-slicer="month"><div class="slicer-title">Month</div><div class="slicer-buttons grid-4"></div></div>
+      <div class="slicer" data-slicer="region"><div class="slicer-title">Region</div><div class="slicer-buttons grid-2"></div></div>
+      <div class="slicer" data-slicer="venue"><div class="slicer-title">Venue type</div><div class="slicer-buttons grid-2"></div></div>
+      <div class="slicer" data-slicer="contract"><div class="slicer-title">Contract type</div><div class="slicer-buttons grid-2"></div></div>
+      <div class="slicer" data-slicer="account" hidden><div class="slicer-title">Account</div><div class="slicer-buttons list"></div></div>
+      <button class="clear-btn" id="clear-filters" type="button">Reset filters</button>
+      <p class="slicer-note">Single-select (click again to clear) | default Jun 2026<br>Cards: month | YTD | PY | YoY<br>Click a chart, map or matrix element to cross-filter; click again to clear</p>
     </aside>
-    <main class="content">
-      <section class="kpi-row">
-        <div class="kpi"><span class="kpi-label">KPI 1</span><span class="kpi-value">--</span></div>
-        <div class="kpi"><span class="kpi-label">KPI 2</span><span class="kpi-value">--</span></div>
-        <div class="kpi"><span class="kpi-label">KPI 3</span><span class="kpi-value">--</span></div>
-        <div class="kpi"><span class="kpi-label">KPI 4</span><span class="kpi-value">--</span></div>
+
+    <main class="content" id="page-board-summary">
+      <div class="page-head">
+        <h2 class="page-title">Board Summary</h2>
+        <div class="card period-card"><span class="period-label">Selected period</span><span class="period-value" id="period-label">--</span></div>
+      </div>
+
+      <section class="card kpi-strip" id="kpi-strip"></section>
+
+      <section class="mid-row">
+        <div class="card chart-card">
+          <div class="card-head">
+            <span class="card-title">Revenue &amp; contribution</span>
+            <div class="window-buttons" id="trend-window"></div>
+          </div>
+          <div id="trend-chart" class="chart"></div>
+        </div>
+        <div class="mini-grid" id="mini-cards"></div>
       </section>
-      <section class="chart-area">
-        <div class="panel" id="chart-1">Chart placeholder</div>
-        <div class="panel" id="chart-2">Chart placeholder</div>
+
+      <section class="bottom-row">
+        <div class="card matrix-card">
+          <div class="card-title">Performance by account (totals = cards above)</div>
+          <div class="matrix-wrap"><table class="matrix" id="matrix"></table></div>
+        </div>
+        <div class="card highlights-card">
+          <div class="card-title" id="highlights-title">Highlights</div>
+          <table class="matrix highlights" id="highlights"></table>
+        </div>
       </section>
-      <section class="matrix-area">
-        <div class="panel" id="matrix">Matrix placeholder</div>
+      <div class="page-foot">Executive Dashboard | Data window <span id="data-window" class="data-window"></span></div>
+    </main>
+
+    <main class="content" id="page-growth-deployment" hidden>
+      <div class="page-head">
+        <div><h2 class="page-title">Growth &amp; Deployment</h2><p class="page-sub">Signed → ready → live → operating; installed base, conversion, time to live, unit churn</p></div>
+        <div class="card period-card"><span class="period-label">Selected period</span><span class="period-value period-out">--</span></div>
+      </div>
+      <section class="card kpi-strip" id="g-kpis"></section>
+      <section class="row3">
+        <div class="card chart-card"><div class="card-title">Installs / removals (columns) and installed base (line)</div><div id="g-combo" class="chart"></div></div>
+        <div class="card chart-card"><div class="card-title">Live within 60 / 90 / 120 days of signing (by signing half-year)</div><div id="g-half" class="chart"></div></div>
+        <div class="card chart-card"><div class="card-title">Days to live by region: sign → live P50 / P90, ready → live P50 (full window)</div><div id="g-region" class="chart"></div></div>
       </section>
+      <section class="row2 wide-left">
+        <div class="card matrix-card"><div class="card-title">Growth by venue type (totals = cards above)</div><div class="matrix-wrap"><table class="matrix" id="g-venue"></table></div></div>
+        <div class="card matrix-card"><div class="card-title">Go-live cohorts</div><div class="matrix-wrap"><table class="matrix" id="g-cohort"></table></div></div>
+      </section>
+      <div class="page-foot">Executive Dashboard | Data window <span class="data-window"></span></div>
+    </main>
+
+    <main class="content" id="page-site-productivity" hidden>
+      <div class="page-head">
+        <div><h2 class="page-title">Site Productivity</h2><p class="page-sub">Cups per machine-day, average ticket, cashless share; site map and the low-volume tail</p></div>
+        <div class="card period-card"><span class="period-label">Selected period</span><span class="period-value period-out">--</span></div>
+      </div>
+      <section class="card kpi-strip kpi-4" id="p-kpis"></section>
+      <section class="prod-grid">
+        <div class="card map-card"><div class="card-title">Site map (size = revenue, colour = venue type)</div>
+          <div class="card-sub">Basemap © OpenStreetMap contributors | <span id="p-map-note"></span></div>
+          <div class="legend" id="p-map-legend"></div><div id="p-map" class="map"></div></div>
+        <div class="card chart-card"><div class="card-title">Cups per machine-day P25 / median / P75 by venue type</div><div id="p-pct" class="chart"></div></div>
+        <div class="card chart-card"><div class="card-title">Product mix %</div><div id="p-mix" class="chart"></div></div>
+        <div class="card matrix-card"><div class="card-title">Productivity by venue type (totals = cards above)</div><div class="matrix-wrap"><table class="matrix" id="p-venue"></table></div></div>
+        <div class="card matrix-card"><div class="card-title">Low-volume tail (bottom quartile)</div><div class="matrix-wrap scroll"><table class="matrix" id="p-tail"></table></div></div>
+      </section>
+      <div class="page-foot">Executive Dashboard | Data window <span class="data-window"></span></div>
+    </main>
+
+    <main class="content" id="page-availability-ops" hidden>
+      <div class="page-head">
+        <div><h2 class="page-title">Availability &amp; Ops Quality</h2><p class="page-sub">Uptime vs sellable availability, lost time by cause, maintenance and replenishment quality; month × venue heatmap</p></div>
+        <div class="card period-card"><span class="period-label">Selected period</span><span class="period-value period-out">--</span></div>
+      </div>
+      <section class="card kpi-strip" id="a-kpis"></section>
+      <section class="row2">
+        <div class="card chart-card"><div class="card-title">Lost sellable time by cause (columns, % of scheduled) vs uptime and sellable (lines) – selected year; ignores Month</div><div id="a-combo" class="chart"></div></div>
+        <div class="card matrix-card"><div class="card-title">Heatmap: sellable availability, month × venue type (selected year; ignores Month)</div><div class="matrix-wrap"><table class="matrix heat" id="a-heat"></table></div></div>
+      </section>
+      <section class="row2 wide-left">
+        <div class="card matrix-card"><div class="card-title">Availability and quality by venue type (totals = cards above; grey = &lt; 5 breakdowns or &lt; 3 machine-months)</div><div class="matrix-wrap"><table class="matrix" id="a-venue"></table></div></div>
+        <div class="card chart-card"><div class="card-title">Top 10 sites: consumption variance (waste in tooltip)</div><div id="a-top" class="chart"></div></div>
+      </section>
+      <div class="page-foot">Executive Dashboard | Data window <span class="data-window"></span></div>
     </main>
   </div>
   <footer class="footer">All data is simulated data for demo purposes.</footer>
+  <script src="js/measures.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/pages/common.js"></script>
+  <script src="js/pages/growth.js"></script>
+  <script src="js/pages/productivity.js"></script>
+  <script src="js/pages/availability.js"></script>
 </body>
 </html>
