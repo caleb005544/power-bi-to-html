@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Dashboard | Power BI to HTML</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Planned CDN libs: ECharts, Leaflet (added when charts are built) -->
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>Executive Dashboard</h1>
+      <p class="subtitle">Business Analyst Portfolio</p>
+    </div>
+  </header>
+  <nav class="tabs">
+    <button class="tab active" data-page="board-summary">Board Summary</button>
+    <button class="tab" data-page="growth-deployment">Growth &amp; Deployment</button>
+    <button class="tab" data-page="site-productivity">Site Productivity</button>
+    <button class="tab" data-page="availability-ops">Availability &amp; Ops</button>
+  </nav>
+  <div class="layout">
+    <aside class="slicers">
+      <label>Year<select id="slicer-year"><option>All</option></select></label>
+      <label>Month<select id="slicer-month"><option>All</option></select></label>
+    </aside>
+    <main class="content">
+      <section class="kpi-row">
+        <div class="kpi"><span class="kpi-label">KPI 1</span><span class="kpi-value">--</span></div>
+        <div class="kpi"><span class="kpi-label">KPI 2</span><span class="kpi-value">--</span></div>
+        <div class="kpi"><span class="kpi-label">KPI 3</span><span class="kpi-value">--</span></div>
+        <div class="kpi"><span class="kpi-label">KPI 4</span><span class="kpi-value">--</span></div>
+      </section>
+      <section class="chart-area">
+        <div class="panel" id="chart-1">Chart placeholder</div>
+        <div class="panel" id="chart-2">Chart placeholder</div>
+      </section>
+      <section class="matrix-area">
+        <div class="panel" id="matrix">Matrix placeholder</div>
+      </section>
+    </main>
+  </div>
+  <footer class="footer">All data is simulated data for demo purposes.</footer>
+  <script src="js/app.js"></script>
+</body>
+</html>
